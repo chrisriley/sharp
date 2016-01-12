@@ -120,6 +120,7 @@ struct PipelineBaton {
   double gamma;
   bool greyscale;
   bool normalize;
+  bool antialiasMore;
   int angle;
   bool rotateBeforePreExtract;
   bool flip;
@@ -164,6 +165,7 @@ struct PipelineBaton {
     gamma(0.0),
     greyscale(false),
     normalize(false),
+    antialiasMore(false),
     angle(0),
     flip(false),
     flop(false),
@@ -575,8 +577,17 @@ class PipelineWorker : public AsyncWorker {
       // Apply Gaussian blur before large affine reductions
       if (residual < 1.0) {
         // Calculate standard deviation
-        double sigma = ((1.0 / residual) - 0.4) / 3.0;
-        if (sigma >= 0.3) {
+        double sigma;
+        double sigmaThreshold;
+        if (baton->antialiasMore) {
+          // Used by jculpitt in vipsthumbnail (produces more anti-aliasing)
+          sigma = ((1.0 / residual) - 0.5) / 1.5;
+          sigmaThreshold = 0.1;
+        } else {
+          sigma = ((1.0 / residual) - 0.4) / 3.0;
+          sigmaThreshold = 0.3;
+        }
+        if (sigma >= sigmaThreshold) {
           // Sequential input requires a small linecache before use of convolution
           if (baton->accessMethod == VIPS_ACCESS_SEQUENTIAL) {
             VipsImage *lineCached;
@@ -606,6 +617,19 @@ class PipelineWorker : public AsyncWorker {
       }
       vips_object_local(hook, affined);
       image = affined;
+
+      if (baton->antialiasMore) {
+        double shrink = (xshrink + yshrink) / 2.0;
+
+        if (shrink >= 1.0 && residual < 1.0) {
+          VipsImage *antialiasSharpen;
+          if (Sharpen(hook, image, &antialiasSharpen, -1, 0.0, 0.0)) {
+            return Error();
+          }
+          vips_object_local(hook, antialiasSharpen);
+          image = antialiasSharpen;
+        }
+      }
     }
 
     // Rotate
@@ -1328,6 +1352,7 @@ NAN_METHOD(pipeline) {
   baton->gamma = To<int32_t>(Get(options, New("gamma").ToLocalChecked()).ToLocalChecked()).FromJust();
   baton->greyscale = To<bool>(Get(options, New("greyscale").ToLocalChecked()).ToLocalChecked()).FromJust();
   baton->normalize = To<bool>(Get(options, New("normalize").ToLocalChecked()).ToLocalChecked()).FromJust();
+  baton->antialiasMore = To<bool>(Get(options, New("antialiasMore").ToLocalChecked()).ToLocalChecked()).FromJust();
   baton->angle = To<int32_t>(Get(options, New("angle").ToLocalChecked()).ToLocalChecked()).FromJust();
   baton->rotateBeforePreExtract = To<bool>(Get(options, New("rotateBeforePreExtract").ToLocalChecked()).ToLocalChecked()).FromJust();
   baton->flip = To<bool>(Get(options, New("flip").ToLocalChecked()).ToLocalChecked()).FromJust();

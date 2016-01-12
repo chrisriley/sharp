@@ -79,6 +79,7 @@ var Sharp = function(input) {
     gamma: 0,
     greyscale: false,
     normalize: 0,
+    antialiasMore: false,
     // overlay
     bufferOverlay: null,
     hasOverlay: false,
@@ -541,6 +542,11 @@ Sharp.prototype.quality = function(quality) {
   } else {
     throw new Error('Invalid quality (1 to 100) ' + quality);
   }
+  return this;
+};
+
+Sharp.prototype.antialiasMore = function(antialiasMore) {
+  this.options.antialiasMore = (typeof antialiasMore === 'boolean') ? antialiasMore : true;
   return this;
 };
 
