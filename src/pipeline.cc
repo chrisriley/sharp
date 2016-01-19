@@ -626,7 +626,7 @@ class PipelineWorker : public AsyncWorker {
           if (Sharpen(hook, image, &antialiasSharpen, -1, 0.0, 0.0)) {
             return Error();
           }
-          vips_object_local(hook, antialiasSharpen);
+          //vips_object_local(hook, antialiasSharpen);
           image = antialiasSharpen;
         }
       }
