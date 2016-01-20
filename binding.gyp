@@ -29,7 +29,8 @@
       'conditions': [
         ['OS != "win"', {
           # Does the globally available version of libvips, if any, meet the minimum version requirement?
-          'use_global_vips': '<!(GLOBAL_VIPS_VERSION="<(global_vips_version)" node -e "require(\'./binding\').use_global_vips()")'
+          #'use_global_vips': '<!(GLOBAL_VIPS_VERSION="<(global_vips_version)" node -e "require(\'./binding\').use_global_vips()")'
+          'use_global_vips': ''
         }, {
           'use_global_vips': ''
         }]
@@ -77,32 +78,46 @@
           }],
           ['OS == "linux"', {
             'variables': {
-              'download_vips': '<!(LDD_VERSION="<!(ldd --version 2>&1 || true)" node -e "require(\'./binding\').download_vips()")'
+              #'download_vips': '<!(LDD_VERSION="<!(ldd --version 2>&1 || true)" node -e "require(\'./binding\').download_vips()")'
+              'download_vips': '<!(node -e "require(\'./binding-rentpath\').download_vips()")'
             },
             'libraries': [
               '<(module_root_dir)/lib/libvips.so',
               '<(module_root_dir)/lib/libglib-2.0.so',
               '<(module_root_dir)/lib/libgobject-2.0.so',
               # Dependencies of dependencies, included for openSUSE support
-              '<(module_root_dir)/lib/libMagickCore-6.Q16.so',
-              '<(module_root_dir)/lib/libMagickWand-6.Q16.so',
+              '<(module_root_dir)/lib/libcfitsio.so',
               '<(module_root_dir)/lib/libexif.so',
+              '<(module_root_dir)/lib/libfftw3_omp.so',
+              '<(module_root_dir)/lib/libfftw3.so',
+              '<(module_root_dir)/lib/libfftw3_threads.so',
               '<(module_root_dir)/lib/libgio-2.0.so',
               '<(module_root_dir)/lib/libgmodule-2.0.so',
+              '<(module_root_dir)/lib/libGraphicsMagick.so',
+              '<(module_root_dir)/lib/libGraphicsMagick++.so',
+              '<(module_root_dir)/lib/libGraphicsMagickWand.so',
               '<(module_root_dir)/lib/libgsf-1.so',
-              '<(module_root_dir)/lib/libjpeg.so',
-              '<(module_root_dir)/lib/libpng.so',
-              '<(module_root_dir)/lib/libtiff.so',
-              '<(module_root_dir)/lib/libwebp.so',
-              '<(module_root_dir)/lib/libz.so',
-              '<(module_root_dir)/lib/libffi.so',
               '<(module_root_dir)/lib/libgthread-2.0.so',
+              '<(module_root_dir)/lib/libHalf.so',
+              '<(module_root_dir)/lib/libIexMath.so',
+              '<(module_root_dir)/lib/libIex.so',
+              '<(module_root_dir)/lib/libIlmImf.so',
+              '<(module_root_dir)/lib/libIlmImfUtil.so',
+              '<(module_root_dir)/lib/libIlmThread.so',
+              '<(module_root_dir)/lib/libImath.so',
+              '<(module_root_dir)/lib/libjpeg.so',
               '<(module_root_dir)/lib/liblcms2.so',
-              '<(module_root_dir)/lib/libpng16.so',
-              '<(module_root_dir)/lib/libxml2.so',
+              '<(module_root_dir)/lib/libmatio.so',
               '<(module_root_dir)/lib/liborc-0.4.so',
-              # Ensure runtime linking is relative to sharp.node
-              '-Wl,-rpath=\'$${ORIGIN}/../../lib\''
+              '<(module_root_dir)/lib/libpng16.so',
+              '<(module_root_dir)/lib/libtiff.so',
+              '<(module_root_dir)/lib/libtiffxx.so',
+              '<(module_root_dir)/lib/libwebp.so',
+              '<(module_root_dir)/lib/libxml2.so',
+              '<(module_root_dir)/lib/libz.so',
+              '<(module_root_dir)/lib64/libffi.so',
+             # Ensure runtime linking is relative to sharp.node
+              '-Wl,-rpath=\'$${ORIGIN}/../../lib\' -Wl,-rpath=\'$${ORIGIN}/../../lib64\''
             ]
           }]
         ]
